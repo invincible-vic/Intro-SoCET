@@ -8,13 +8,13 @@ module first_module(
     ha u1 (.a(input_A), .b(input_B), .sum(output_S), .cout(output_C));
 
     // Dataflow Modeling:
-    assign output_S = input_A ^ input_B;
-    assign output_C = input_A & input_B;
+    // assign output_S = input_A ^ input_B;
+    // assign output_C = input_A & input_B;
 
     // Behavioral Modeling:
-    always_comb begin
-        {output_C, output_S} = input_A + input_B;
-    end
+    // always_comb begin
+        // {output_C, output_S} = input_A + input_B;
+    // end
 
 endmodule
 
