@@ -8,7 +8,7 @@ module full_adder(
     // Note: an alternative way of expressing this would be:
     // assign {cout, s} = a + b + cin;
     // TODO: There's a bug in here!
-    assign s = a ^ b;
+    assign s = a ^ b ^ cin;
     assign cout = (a & b) | ((a ^ b) & cin);
 
 endmodule
