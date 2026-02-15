@@ -18,13 +18,13 @@ module eight_bit_adder(
     genvar i; 
     generate
         for (i = 0; i < 8; i++) begin
-            full_adder(
+            full_adder fa_inst(
                 .a(a[i]),
                 .b(b[i]),
                 .cin(car[i]),
                 .s(c[i]),
                 .cout(car[i + 1])
-            )
+            );
         end
     endgenerate
 
