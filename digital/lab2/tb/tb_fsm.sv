@@ -26,7 +26,7 @@ module tb_fsm;
     fsm DUT(
         .CLK,
         .nRST,
-        .data (tb_data)
+        .data (tb_data),
         .accept (tb_accept)
     );
     /*
