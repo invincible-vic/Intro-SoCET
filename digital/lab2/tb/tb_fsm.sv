@@ -85,7 +85,7 @@ module tb_fsm;
 
         // TODO: Execute the test here
         for (int i = 7; i >= 0; i--) begin
-            send_bit(vec.data_stream[i])
+            send_bit(vec.data_stream[i]);
         end
 
         #(1); // Delay to ensure sample after output changes
