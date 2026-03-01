@@ -11,10 +11,12 @@ module tb_copier;
     // Adding things like a test number, or a string containing
     // the name of the test can be helpful for discerning when tests
     // start/stop when viewed in the waveforms.
+    int test_num = 0;
 
     // TODO: Instantiate another memory_if interface
     // for connecting the copier to the memory
     memory_if testif();
+    memory_if copierif();
 
     // Clock generation
     always #(10) CLK++;
@@ -28,6 +30,7 @@ module tb_copier;
         .start(start),
         .finished(finished),
         // TODO: Add your memory interface here!
+        .memif(copierif.request)
     );
     
     memory MEM(
@@ -35,6 +38,7 @@ module tb_copier;
         .nRST(nRST),
         .testif(testif.response),
         //TODO: Add your memory interface here!
+        .memif(copierif.response)
     );
 
     task reset();
@@ -95,6 +99,28 @@ module tb_copier;
     end
     endtask
 
+    task read_memory(
+        input logic [7:0] addr,
+        output logic [7:0] data
+    );
+    begin        
+        testif.wen = 1'b0;
+        testif.ren = 1'b1;
+        testif.addr = addr;
+        
+        @(posedge CLK);
+        #(1);
+
+        while (!testif.ready) begin
+            @(posedge CLK);
+            #(1);
+        end
+
+        data = testif.rdata;
+        testif.ren = 1'b0;
+    end
+    endtask
+
     /*
     * TODO: Fill in the task to perform a copy. The
     * testbench should send a start signal, and wait
@@ -119,16 +145,34 @@ module tb_copier;
     begin
         
         // Result checking template
-        logic expected, actual;
+        logic [7:0] expected, actual;
 
-        if (expected === actual) begin
-            $display("Passed, byte data \'%h\' at src address 0x%h matches byte data \'%h\' at dst address 0x%h", 
-                        expected, src + 8'(i), actual, dst + 8'(i));
-        end else begin
-            $error("Failed, byte data \'%h\' at src address 0x%h does not match byte data \'%h\' at dst address 0x%h", 
-                        expected, src + 8'(i), actual, dst + 8'(i));
+        src_addr = src;
+        dst_addr = dst;
+        copy_size = size;
+
+        start = 1'b1;
+        @(posedge CLK);
+        #(1);
+        start = 1'b0;
+
+        while (!finished) begin
+            @(posedge CLK);
+            #(1);
         end
 
+        for (int i = 0; i < size; i++) begin
+            read_memory(src + 8'(i), expected);
+            read_memory(dst + 8'(i), actual);
+
+            if (expected === actual) begin
+                $display("Passed, byte data \'%h\' at src address 0x%h matches byte data \'%h\' at dst address 0x%h", 
+                            expected, src + 8'(i), actual, dst + 8'(i));
+            end else begin
+                $error("Failed, byte data \'%h\' at src address 0x%h does not match byte data \'%h\' at dst address 0x%h", 
+                            expected, src + 8'(i), actual, dst + 8'(i));
+            end
+        end
     end
     endtask
 
@@ -145,8 +189,22 @@ module tb_copier;
         reset();
 
         // TODO: Make two more test cases to run your design!
+        test_num++;
+        $display("\nTest %d:", test_num);
         initialize_memory(8'h0, 8'h8); // Init 8 bytes starting at 0x0
         do_copy(8'h0, 8'hF0, 8'h8); // Test copying 8 bytes from 0x0 to 0xF0
+
+        reset_signals();
+        test_num++;
+        $display("\nTest %d:", test_num);
+        initialize_memory(8'hF0, 8'd1);
+        do_copy(8'hF0, 8'h0, 8'd1);
+
+        reset_signals();
+        test_num++;
+        $display("\nTest %d:", test_num);
+        initialize_memory(8'd17, 8'd32);
+        do_copy(8'd17, 8'd99, 8'd32);
 
         $finish;
     end
