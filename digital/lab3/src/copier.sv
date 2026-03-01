@@ -19,6 +19,21 @@ module copier(
     // HINT: Draw out an RTL diagram of this module first using the submodules
     // "data_register" and "flex_counter"
 
+    typedef enum logic [1:0] {
+        IDLE,
+        READ,
+        WRITE,
+        FINISH,
+    } state_t;
+
+    state_t state, next;
+
+    data_resister flipflop (
+        .CLK
+        .nRST
+        
+    );
+
 
     
 
